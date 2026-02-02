@@ -9,6 +9,7 @@ from app.api import deps
 from app.core import security
 from app.core.database import get_db
 from app.models.user import User
+from app.services.user_service import UserService
 from app.schemas.user import UserCreate, UserResponse
 from app.schemas.auth import Token, RefreshTokenRequest, TokenPayload
 from app.core.config import settings
@@ -43,8 +44,7 @@ async def refresh_token(
             detail="Invalid token type",
         )
 
-    result = await db.execute(select(User).where(User.id == token_data.sub))
-    user = result.scalars().first()
+    user = await UserService.get(db, id=token_data.sub)
     
     if not user:
         raise HTTPException(status_code=404, detail="User not found")
@@ -69,10 +69,11 @@ async def login_access_token(
     OAuth2 compatible token login, get an access token for future requests
     """
     # Authenticate user
-    result = await db.execute(select(User).where(User.email == form_data.username))
-    user = result.scalars().first()
+    user = await UserService.authenticate(
+        db, email=form_data.username, password=form_data.password
+    )
     
-    if not user or not security.verify_password(form_data.password, user.password_hash):
+    if not user:
         raise HTTPException(status_code=400, detail="Incorrect email or password")
     if not user.is_active:
         raise HTTPException(status_code=400, detail="Inactive user")
@@ -95,23 +96,10 @@ async def register_new_user(
     """
     Create new user.
     """
-    # Check if user exists
-    result = await db.execute(select(User).where(User.email == user_in.email))
-    existing_user = result.scalars().first()
-    if existing_user:
+    user = await UserService.create(db, user_in)
+    if not user:
         raise HTTPException(
             status_code=400,
             detail="The user with this username already exists in the system.",
         )
-        
-    user = User(
-        email=user_in.email,
-        password_hash=security.get_password_hash(user_in.password),
-        first_name=user_in.first_name,
-        last_name=user_in.last_name,
-        is_active=True
-    )
-    db.add(user)
-    await db.commit()
-    await db.refresh(user)
     return user
