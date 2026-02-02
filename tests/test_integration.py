@@ -78,5 +78,54 @@ async def test_user_flow_and_items(ac: AsyncClient):
     assert response.status_code == 200
     # The deleted item should NOT be in the list ideally, or filtered.
     # Our implementation filters by deleted_at is None.
-    items = response.json()
+    items = response.json().get('items', []) # Paginated response now!
     assert not any(i["id"] == item_id for i in items)
+
+@pytest.mark.asyncio
+async def test_advanced_scenarios(ac: AsyncClient):
+    # Setup: Create a user
+    email = random_email()
+    password = "securepassword123"
+    register_data = {"email": email, "password": password, "first_name": "Adv", "last_name": "User"}
+    await ac.post("/api/v1/auth/register", json=register_data)
+    
+    # Login
+    login_resp = await ac.post("/api/v1/auth/login", data={"username": email, "password": password})
+    token = login_resp.json()["access_token"]
+    headers = {"Authorization": f"Bearer {token}"}
+    
+    # 1. Test Invalid UUID
+    invalid_id = "not-a-uuid"
+    resp = await ac.get(f"/api/v1/items/{invalid_id}", headers=headers)
+    assert resp.status_code == 422 # Validation Error
+
+    # 2. Test Non-existent Item
+    random_id = uuid.uuid4()
+    resp = await ac.get(f"/api/v1/items/{random_id}", headers=headers)
+    assert resp.status_code == 404
+    
+    # 3. Analytics with Multiple Items
+    # Create 3 items in 'Electronics', 1 in 'Books'
+    for _ in range(3):
+        await ac.post("/api/v1/items/", headers=headers, json={"name": "Phone", "category": "Electronics"})
+    await ac.post("/api/v1/items/", headers=headers, json={"name": "Book", "category": "Books"})
+    
+    resp = await ac.get("/api/v1/items/analytics/category-density", headers=headers)
+    assert resp.status_code == 200
+    data = resp.json()["data"]
+    
+    # Verify Density Calculation
+    # Note: Since tests run against the same DB, other items might exist. 
+    # We check if categories exist and have valid percentages.
+    categories = {c["category"]: c["percentage"] for c in data["categories"]}
+    assert "Electronics" in categories
+    assert "Books" in categories
+    assert categories["Electronics"] > 0
+    assert categories["Books"] > 0
+    
+    # 4. Inactive User Login Attempt (Simulated)
+    # Since we don't have an endpoint to deactivate user easily without DB access in tests (unless we add one or mocking),
+    # we will skip direct inactive login test OR rely on unit tests if we had user service.
+    # However, we can try to access with an expired token signature if we could generate one, 
+    # but that's complex without internal helpers exposed.
+    # We'll stick to what we can test black-box style effectively.
