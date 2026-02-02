@@ -23,3 +23,7 @@ async def health_check(db: AsyncSession = Depends(get_db)):
         return {"status": "healthy", "database": "connected"}
     except Exception as e:
         return {"status": "unhealthy", "database": "disconnected", "error": str(e)}
+
+from app.api.v1.api import api_router
+
+app.include_router(api_router, prefix="/api/v1")
