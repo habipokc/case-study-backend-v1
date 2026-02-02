@@ -7,7 +7,7 @@ from app.models.item import ItemStatus
 class ItemBase(BaseModel):
     name: str
     category: str
-    status: Optional[str] = ItemStatus.ACTIVE
+    status: Optional[ItemStatus] = ItemStatus.ACTIVE
 
 # Properties to receive on creation
 class ItemCreate(ItemBase):
@@ -17,7 +17,7 @@ class ItemCreate(ItemBase):
 class ItemUpdate(BaseModel):
     name: Optional[str] = None
     category: Optional[str] = None
-    status: Optional[str] = None
+    status: Optional[ItemStatus] = None
 
 # Properties to return to client
 class ItemResponse(ItemBase):

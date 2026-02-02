@@ -1,9 +1,21 @@
 from fastapi import FastAPI
+from fastapi.middleware.cors import CORSMiddleware
 
 app = FastAPI(
     title="Python Backend Case Study",
     description="API for Case Study",
     version="1.0.0"
+)
+
+# CORS Configuration
+origins = ["*"] # In production, verify specific keys
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=origins,
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
 )
 
 from sqlalchemy import text
