@@ -106,6 +106,18 @@ Minimum Hedef Coverage: **%70** (Proje şu an **%79** seviyesindedir).
 ### Analytics
 - `GET /api/v1/items/analytics/category-density`: Kategori bazlı ürün yoğunluğu raporu.
 
+### System & Health
+- `GET /health`: Sistem sağlık durumu kontrolü (Veritabanı bağlantısı dahil).
+- `GET /`: API kök dizini (Servis durumunu döner).
+
+---
+
+## 📌 API Versioning
+Proje, gelecekteki değişiklikleri yönetmek için URL tabanlı versiyonlama kullanmaktadır.
+- Mevcut Versiyon: **v1**
+- Base URL: `/api/v1`
+- Örnek: `http://localhost:8000/api/v1/items/`
+
 ---
 
 ## 🔐 Güvenlik
