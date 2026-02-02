@@ -93,13 +93,15 @@ Tarayıcınızda açın: **http://localhost:8000/docs**
 
 ```bash
 # Docker container içinde testleri çalıştır
-docker-compose exec web pytest
+docker-compose exec web pytest -v
 
 # Coverage raporu ile
 docker-compose exec web pytest --cov=app --cov-report=term-missing
 ```
 
-**Test Coverage:** %79 ✅
+**Test Coverage:** %77 ✅
+
+> **Not:** Testler ayrı bir test veritabanı (`db_test` container) kullanır ve production verisini etkilemez.
 
 ---
 
