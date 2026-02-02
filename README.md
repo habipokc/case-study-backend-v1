@@ -1,4 +1,4 @@
-# 🐍 Python Backend Developer Case Study - FastAPI Item Management System
+# Python Backend Case Study - FastAPI Item Management System
 
 Bu proje, modern ve ölçeklenebilir bir backend mimarisi (Clean Architecture) kullanılarak geliştirilmiş, Item (Ürün) yönetimi ve analitiği sağlayan bir RESTful API servisidir.
 
@@ -21,7 +21,7 @@ Bu proje, modern ve ölçeklenebilir bir backend mimarisi (Clean Architecture) k
 Projeyi yerel ortamınızda çalıştırmak için aşağıdaki adımları izleyin.
 
 ### 1. Ön Hazırlık
-Ambargoya (Repository) sahip olduğunuzdan emin olun ve dizine gidin:
+
 ```bash
 git clone https://github.com/habipokc/case-study-backend-v1.git
 cd case-study-backend-v1
