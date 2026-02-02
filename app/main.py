@@ -23,6 +23,12 @@ from app.core.database import get_db
 from fastapi import Depends
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from app.core.logging import setup_logging
+
+@app.on_event("startup")
+async def startup_event():
+    setup_logging()
+
 @app.get("/")
 async def root():
     return {"message": "Service is up and running"}
