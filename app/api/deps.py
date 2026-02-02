@@ -29,6 +29,15 @@ async def get_current_user(
             status_code=status.HTTP_403_FORBIDDEN,
             detail="Could not validate credentials",
         )
+
+    # Check validation against Redis Blacklist
+    from app.core.redis import redis_client
+    is_blacklisted = await redis_client.get_value(f"blacklist:{token}")
+    if is_blacklisted:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Token has been revoked",
+        )
     
     result = await db.execute(select(User).where(User.id == token_data.sub))
     user = result.scalars().first()

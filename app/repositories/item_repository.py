@@ -65,44 +65,61 @@ class ItemRepository(BaseRepository[Item, ItemCreate, ItemUpdate]):
 
     async def get_analytics(self, db: AsyncSession) -> Dict[str, Any]:
         """
-        Calculates category density statistics.
+        Calculates category density statistics with Caching.
         """
+        # 1. Check Cache
+        import json
+        from app.core.redis import redis_client
+        
+        cache_key = "analytics:category_density"
+        cached_data = await redis_client.get_value(cache_key)
+        if cached_data:
+            return json.loads(cached_data)
+
+        # 2. Calculate if cache miss
         # Get total non-deleted items count
         total_query = select(func.count(Item.id)).where(Item.deleted_at.is_(None))
         total_result = await db.execute(total_query)
         total_items = total_result.scalar() or 0
         
+        result_data = {}
+
         if total_items == 0:
-            return {
+            result_data = {
                 "success": True,
                 "data": {
                     "total_items": 0,
                     "categories": []
                 }
             }
-
-        # Get count per category
-        cat_query = (
-            select(Item.category, func.count(Item.id))
-            .where(Item.deleted_at.is_(None))
-            .group_by(Item.category)
-        )
-        cat_result = await db.execute(cat_query)
-        
-        categories_data = []
-        for category, count in cat_result:
-            categories_data.append({
-                "category": category,
-                "count": count,
-                "percentage": round((count / total_items) * 100, 1)
-            })
+        else:
+            # Get count per category
+            cat_query = (
+                select(Item.category, func.count(Item.id))
+                .where(Item.deleted_at.is_(None))
+                .group_by(Item.category)
+            )
+            cat_result = await db.execute(cat_query)
             
-        return {
-            "success": True,
-            "data": {
-                "total_items": total_items,
-                "categories": categories_data
+            categories_data = []
+            for category, count in cat_result:
+                categories_data.append({
+                    "category": category,
+                    "count": count,
+                    "percentage": round((count / total_items) * 100, 1)
+                })
+                
+            result_data = {
+                "success": True,
+                "data": {
+                    "total_items": total_items,
+                    "categories": categories_data
+                }
             }
-        }
+            
+        # 3. Set Cache (60 seconds)
+        await redis_client.set_value(cache_key, json.dumps(result_data), expire=60)
+        
+        return result_data
 
 item_repository = ItemRepository(Item)

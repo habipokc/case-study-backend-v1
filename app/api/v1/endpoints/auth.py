@@ -15,8 +15,32 @@ from app.schemas.auth import Token, RefreshTokenRequest, TokenPayload
 from app.core.config import settings
 from jose import jwt, JWTError
 from pydantic import ValidationError
+from app.core.redis import redis_client
 
 router = APIRouter()
+
+@router.post("/logout", status_code=200)
+async def logout(
+    token: str = Depends(deps.reusable_oauth2)
+):
+    """
+    Logout user by blacklisting the access token.
+    """
+    # Simply add the token to redis blacklist
+    # We ideally should calculate remaining time from token exp, but for simplicity we use static expire
+    # In a real scenario: decode token -> gets 'exp' -> calc ttl
+    
+    try:
+        payload = jwt.decode(token, settings.SECRET_KEY, algorithms=[security.ALGORITHM])
+        # Optionally Calculate TTL here
+        # exp = payload.get("exp")
+        # now = datetime.utcnow().timestamp()
+        # ttl = int(exp - now)
+    except:
+        pass # If token invalid, still OK to just return success or ignore
+        
+    await redis_client.set_value(f"blacklist:{token}", "true", expire=settings.ACCESS_TOKEN_EXPIRE_MINUTES * 60)
+    return {"message": "Successfully logged out"}
 
 @router.post("/refresh", response_model=Token)
 async def refresh_token(

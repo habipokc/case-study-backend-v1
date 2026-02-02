@@ -6,6 +6,7 @@ class Settings(BaseSettings):
     SECRET_KEY: str = "your-secret-key-change-me-in-production"
     ACCESS_TOKEN_EXPIRE_MINUTES: int = 60
     REFRESH_TOKEN_EXPIRE_DAYS: int = 7
+    REDIS_URL: str = "redis://localhost:6379/0"
     
     # Pydantic v2 Settings Config
     model_config = SettingsConfigDict(

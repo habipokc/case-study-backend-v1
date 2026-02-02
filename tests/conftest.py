@@ -26,6 +26,13 @@ def event_loop():
     yield loop
     loop.close()
 
+@pytest.fixture(autouse=True)
+async def setup_redis(event_loop):
+    from app.core.redis import redis_client
+    await redis_client.connect()
+    yield
+    await redis_client.close()
+
 @pytest.fixture
 async def ac() -> AsyncGenerator[AsyncClient, None]:
     # Use ASGITransport explicitly for httpx 0.26+ compatibility

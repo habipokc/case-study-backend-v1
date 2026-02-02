@@ -1,33 +1,27 @@
-from fastapi import FastAPI
+from contextlib import asynccontextmanager
+from fastapi import FastAPI, Depends
 from fastapi.middleware.cors import CORSMiddleware
+from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy import text
+from app.core.database import get_db
+from app.core.redis import redis_client
+from app.core.logging import setup_logging
+
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    # Startup
+    setup_logging()
+    await redis_client.connect()
+    yield
+    # Shutdown
+    await redis_client.close()
 
 app = FastAPI(
     title="Python Backend Case Study",
     description="API for Case Study",
-    version="1.0.0"
+    version="1.0.0",
+    lifespan=lifespan
 )
-
-# CORS Configuration
-origins = ["*"] # In production, verify specific keys
-
-app.add_middleware(
-    CORSMiddleware,
-    allow_origins=origins,
-    allow_credentials=True,
-    allow_methods=["*"],
-    allow_headers=["*"],
-)
-
-from sqlalchemy import text
-from app.core.database import get_db
-from fastapi import Depends
-from sqlalchemy.ext.asyncio import AsyncSession
-
-from app.core.logging import setup_logging
-
-@app.on_event("startup")
-async def startup_event():
-    setup_logging()
 
 @app.get("/")
 async def root():
