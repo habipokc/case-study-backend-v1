@@ -1,4 +1,4 @@
-from typing import Optional
+from typing import Optional, List
 from pydantic import BaseModel, UUID4
 from datetime import datetime
 from app.models.item import ItemStatus
@@ -28,3 +28,10 @@ class ItemResponse(ItemBase):
 
     class Config:
         from_attributes = True
+
+class PaginatedItemResponse(BaseModel):
+    items: List[ItemResponse]
+    total: int
+    page: int
+    size: int
+    pages: int

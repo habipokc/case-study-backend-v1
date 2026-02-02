@@ -8,23 +8,52 @@ from app.schemas.item import ItemCreate, ItemUpdate
 
 class ItemService:
     @staticmethod
+    @staticmethod
     async def get_multi(
         db: AsyncSession, 
-        skip: int = 0, 
-        limit: int = 100, 
+        page: int = 1, 
+        limit: int = 10, 
         category: Optional[str] = None,
-        status: Optional[str] = None
-    ) -> List[Item]:
+        status: Optional[str] = None,
+        sort_by: str = "created_at",
+        order: str = "desc"
+    ) -> Dict[str, Any]:
+        skip = (page - 1) * limit
+        
+        # Base query
         query = select(Item).where(Item.deleted_at.is_(None))
         
+        # Filters
         if category:
             query = query.where(Item.category == category)
         if status:
             query = query.where(Item.status == status)
             
-        query = query.offset(skip).limit(limit).order_by(desc(Item.created_at))
+        # Count total items (before pagination)
+        count_query = select(func.count()).select_from(query.subquery())
+        total_result = await db.execute(count_query)
+        total = total_result.scalar() or 0
+        
+        # Sorting
+        sort_column = getattr(Item, sort_by, Item.created_at)
+        if order == "asc":
+            query = query.order_by(sort_column.asc())
+        else:
+            query = query.order_by(sort_column.desc())
+            
+        # Pagination
+        query = query.offset(skip).limit(limit)
+        
         result = await db.execute(query)
-        return result.scalars().all()
+        items = result.scalars().all()
+        
+        return {
+            "items": items,
+            "total": total,
+            "page": page,
+            "size": limit,
+            "pages": (total + limit - 1) // limit if limit > 0 else 0
+        }
 
     @staticmethod
     async def get(db: AsyncSession, id: UUID) -> Optional[Item]:
