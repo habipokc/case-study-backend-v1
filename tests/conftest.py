@@ -1,41 +1,70 @@
-import pytest
 import asyncio
 from typing import AsyncGenerator
-from httpx import AsyncClient, ASGITransport
-from sqlalchemy.ext.asyncio import AsyncSession, create_async_engine
-from sqlalchemy.orm import sessionmaker
+
+import pytest
+from httpx import ASGITransport, AsyncClient
+from sqlalchemy.ext.asyncio import AsyncSession
+
+from app.core.database import engine, get_db
 from app.main import app
-from app.core.database import Base, get_db
-from app.core.config import settings
 
-# Use an in-memory SQLite database for testing or a separate test DB
-# For this case study, we'll try to stick to the same DB or ideally a test DB
-# To keep it simple and robust without spinning up another container, 
-# we will use the existing DB but transaction rollbacks or a separate test DB if possible.
-# Ideally: DATABASE_URL_TEST = "postgresql+asyncpg://postgres:postgres@localhost:5432/test_db"
-# But creating DBs dynamically might be complex. 
-# Let's use the Dependency Override pattern with a rollback transaction for isolation if possible.
 
+# -------------------------------------------------
+# Event loop (pytest-asyncio uyumlu)
+# -------------------------------------------------
 @pytest.fixture(scope="session")
 def event_loop():
-    """Create an instance of the default event loop for each test session."""
-    try:
-        loop = asyncio.get_running_loop()
-    except RuntimeError:
-        loop = asyncio.new_event_loop()
+    loop = asyncio.new_event_loop()
     yield loop
     loop.close()
 
+
+# -------------------------------------------------
+# DB session – HER TEST İÇİN TRANSACTION + ROLLBACK
+# -------------------------------------------------
+@pytest.fixture
+async def db_session():
+    async with engine.connect() as connection:
+        transaction = await connection.begin()
+        session = AsyncSession(bind=connection)
+
+        try:
+            yield session
+        finally:
+            await session.close()
+            await transaction.rollback()
+
+
+# -------------------------------------------------
+# get_db dependency override (KRİTİK NOKTA)
+# -------------------------------------------------
 @pytest.fixture(autouse=True)
-async def setup_redis(event_loop):
+async def override_get_db(db_session):
+    async def _get_db_override():
+        yield db_session
+
+    app.dependency_overrides[get_db] = _get_db_override
+    yield
+    app.dependency_overrides.clear()
+
+
+# -------------------------------------------------
+# Redis setup (seninki aynen korunuyor)
+# -------------------------------------------------
+@pytest.fixture(autouse=True)
+async def setup_redis():
     from app.core.redis import redis_client
+
     await redis_client.connect()
     yield
     await redis_client.close()
 
+
+# -------------------------------------------------
+# HTTP client
+# -------------------------------------------------
 @pytest.fixture
 async def ac() -> AsyncGenerator[AsyncClient, None]:
-    # Use ASGITransport explicitly for httpx 0.26+ compatibility
     transport = ASGITransport(app=app)
-    async with AsyncClient(transport=transport, base_url="http://test") as c:
-        yield c
+    async with AsyncClient(transport=transport, base_url="http://test") as client:
+        yield client
