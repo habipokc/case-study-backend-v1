@@ -15,11 +15,11 @@ async def test_redis_blacklist_flow(ac: AsyncClient):
     password = "redispassword"
     
     # Try register (ignore if exists)
-    await ac.post("/api/v1/auth/register", json={
+    await ac.post("/api/v1/users/register", json={
         "email": email, "password": password, "first_name": "Redis", "last_name": "Test"
     })
     
-    login_resp = await ac.post("/api/v1/auth/login", data={"username": email, "password": password})
+    login_resp = await ac.post("/api/v1/users/login", data={"username": email, "password": password})
     assert login_resp.status_code == 200
     token = login_resp.json()["access_token"]
     headers = {"Authorization": f"Bearer {token}"}
@@ -30,7 +30,7 @@ async def test_redis_blacklist_flow(ac: AsyncClient):
     assert resp.json()["email"] == email
     
     # 3. Logout
-    logout_resp = await ac.post("/api/v1/auth/logout", headers=headers)
+    logout_resp = await ac.post("/api/v1/users/logout", headers=headers)
     assert logout_resp.status_code == 200
     
     # 4. Access Protected Endpoint Again (Should Fail)

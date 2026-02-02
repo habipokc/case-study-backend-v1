@@ -9,6 +9,7 @@ Bu proje, modern ve ölçeklenebilir bir backend mimarisi (Clean Architecture) k
 - **PostgreSQL:** Ana veritabanı.
 - **SQLAlchemy 2.0 (Async):** Modern Python ORM.
 - **Alembic:** Veritabanı migrasyonları.
+- **Redis:** Caching ve Token Blacklist.
 - **Docker & Docker Compose:** Konteynerizasyon.
 - **Pytest:** Otomasyon testleri.
 - **Pydantic:** Veri doğrulama ve ayarlar.
@@ -88,16 +89,18 @@ Minimum Hedef Coverage: **%70** (Proje şu an **%79** seviyesindedir).
 
 ## 📡 Endpoint Listesi
 
-### Auth
-- `POST /api/v1/auth/register`: Yeni kullanıcı kaydı.
-- `POST /api/v1/auth/login`: Giriş yap ve JWT al.
+### Auth (User Management)
+- `POST /api/v1/users/register`: Yeni kullanıcı kaydı.
+- `POST /api/v1/users/login`: Giriş yap ve JWT al.
+- `POST /api/v1/users/logout`: Çıkış yap (Token blacklist).
+- `POST /api/v1/users/refresh`: Access token yenile.
 
-### Users
+### Users (Profile)
 - `GET /api/v1/users/profile`: Profil bilgilerini getir.
 - `PUT /api/v1/users/profile`: Profil güncelle.
 
 ### Items
-- `GET /api/v1/items/`: Ürünleri listele (Sayfalama ve Filtreleme).
+- `GET /api/v1/items/`: Ürünleri listele (Sayfalama: `page`, `per_page`; Filtreleme: `status`, `category`; Sıralama: `sort_by`, `order`).
 - `POST /api/v1/items/`: Yeni ürün ekle.
 - `GET /api/v1/items/{id}`: Detay görüntüle.
 - `PUT /api/v1/items/{id}`: Güncelle.
@@ -123,6 +126,7 @@ Proje, gelecekteki değişiklikleri yönetmek için URL tabanlı versiyonlama ku
 ## 🔐 Güvenlik
 - **Stateless Authentication:** JWT (JSON Web Token) kullanılır.
 - **Password Hashing:** Şifreler `bcrypt` ile hashlenerek saklanır.
+- **Token Revocation:** Çıkış yapan kullanıcıların tokenları Redis Blacklist ile engellenir.
 - **Environment Security:** Hassas veriler `.env` dosyasından okunur, kod içinde saklanmaz.
 
 ---

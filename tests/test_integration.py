@@ -17,7 +17,7 @@ async def test_user_flow_and_items(ac: AsyncClient):
         "first_name": "Test",
         "last_name": "User"
     }
-    response = await ac.post("/api/v1/auth/register", json=register_data)
+    response = await ac.post("/api/v1/users/register", json=register_data)
     assert response.status_code == 201
     user_id = response.json()["id"]
 
@@ -26,7 +26,7 @@ async def test_user_flow_and_items(ac: AsyncClient):
         "username": email,
         "password": password
     }
-    response = await ac.post("/api/v1/auth/login", data=login_data)
+    response = await ac.post("/api/v1/users/login", data=login_data)
     assert response.status_code == 200
     tokens = response.json()
     assert "access_token" in tokens
@@ -87,10 +87,10 @@ async def test_advanced_scenarios(ac: AsyncClient):
     email = random_email()
     password = "securepassword123"
     register_data = {"email": email, "password": password, "first_name": "Adv", "last_name": "User"}
-    await ac.post("/api/v1/auth/register", json=register_data)
+    await ac.post("/api/v1/users/register", json=register_data)
     
     # Login
-    login_resp = await ac.post("/api/v1/auth/login", data={"username": email, "password": password})
+    login_resp = await ac.post("/api/v1/users/login", data={"username": email, "password": password})
     token = login_resp.json()["access_token"]
     headers = {"Authorization": f"Bearer {token}"}
     

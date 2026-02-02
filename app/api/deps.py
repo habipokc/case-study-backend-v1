@@ -12,7 +12,7 @@ from app.schemas.auth import TokenPayload
 from sqlalchemy import select
 
 reusable_oauth2 = OAuth2PasswordBearer(
-    tokenUrl=f"/api/v1/auth/login"
+    tokenUrl=f"/api/v1/users/login"
 )
 
 async def get_current_user(

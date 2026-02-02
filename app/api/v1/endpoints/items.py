@@ -24,7 +24,7 @@ async def get_analytics(
 async def read_items(
     db: AsyncSession = Depends(get_db),
     page: int = Query(1, ge=1),
-    limit: int = Query(10, ge=1, le=100),
+    per_page: int = Query(10, ge=1, le=100),
     category: Optional[str] = None,
     item_status: Optional[str] = Query(None, alias="status"),
     sort_by: str = Query("created_at", regex="^(created_at|name|category)$"),
@@ -35,7 +35,7 @@ async def read_items(
     Retrieve items.
     """
     result = await ItemService.get_multi(
-        db, page=page, limit=limit, category=category, status=item_status, sort_by=sort_by, order=order
+        db, page=page, limit=per_page, category=category, status=item_status, sort_by=sort_by, order=order
     )
     return result
 
