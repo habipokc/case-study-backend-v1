@@ -1,8 +1,10 @@
 from pydantic_settings import BaseSettings, SettingsConfigDict
+from typing import Optional
 
 class Settings(BaseSettings):
     PROJECT_NAME: str = "Case Study"
     DATABASE_URL: str = "postgresql+asyncpg://postgres:postgres@localhost:5432/casestudy"
+    TEST_DATABASE_URL: Optional[str] = None  # For test isolation
     SECRET_KEY: str = "your-secret-key-change-me-in-production"
     ACCESS_TOKEN_EXPIRE_MINUTES: int = 60
     REFRESH_TOKEN_EXPIRE_DAYS: int = 7
