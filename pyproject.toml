@@ -3,3 +3,14 @@ minversion = "6.0"
 addopts = "-ra -q --asyncio-mode=auto"
 testpaths = ["tests"]
 python_files = "test_*.py"
+
+[tool.coverage.run]
+data_file = "/tmp/.coverage"
+branch = true
+source = ["app"]
+
+[tool.coverage.report]
+exclude_lines = [
+    "pragma: no cover",
+    "if __name__ == .__main__.:",
+]
