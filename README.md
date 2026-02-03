@@ -99,7 +99,7 @@ docker compose exec web pytest -v
 docker compose exec web pytest --cov=app --cov-report=term-missing
 ```
 
-**Test Coverage:** %77 ✅
+**Test Coverage:** %73 ✅
 
 > **Not:** Testler ayrı bir test veritabanı (`db_test` container) kullanır ve production verisini etkilemez.
 
