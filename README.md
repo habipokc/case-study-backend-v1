@@ -70,7 +70,7 @@ web-1    | Redis connected successfully.
 Yeni bir terminal açın ve çalıştırın:
 
 ```bash
-docker-compose exec web alembic upgrade head
+docker compose exec web alembic upgrade head
 ```
 
 ### 5. Test Edin
@@ -93,10 +93,10 @@ Tarayıcınızda açın: **http://localhost:8000/docs**
 
 ```bash
 # Docker container içinde testleri çalıştır
-docker-compose exec web pytest -v
+docker compose exec web pytest -v
 
 # Coverage raporu ile
-docker-compose exec web pytest --cov=app --cov-report=term-missing
+docker compose exec web pytest --cov=app --cov-report=term-missing
 ```
 
 **Test Coverage:** %77 ✅
@@ -220,10 +220,11 @@ alembic.util.exc.CommandError
 ```
 **Çözüm:** Veritabanını sıfırlayın: 
 ```bash
-docker-compose down -v
-docker-compose up --build
-docker-compose exec web alembic upgrade head
+docker compose down -v
+docker compose up --build
+docker compose exec web alembic upgrade head
 ```
+
 
 ---
 
