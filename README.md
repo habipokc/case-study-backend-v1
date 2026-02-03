@@ -56,7 +56,7 @@ copy .env.example .env
 ### 3. Docker ile Çalıştırma ✨
 
 ```bash
-docker-compose up --build
+docker compose up --build
 ```
 
 İlk çalıştırmada image'lar indirilecek (5-10 dk sürebilir). Başarılı olduğunda şu mesajı göreceksiniz:
