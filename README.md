@@ -99,7 +99,7 @@ docker compose exec web pytest -v
 docker compose exec web pytest --cov=app --cov-report=term-missing
 ```
 
-**Test Coverage:** %73 ✅
+**Test Coverage:** %73 
 
 > **Not:** Testler ayrı bir test veritabanı (`db_test` container) kullanır ve production verisini etkilemez.
 
@@ -212,7 +212,7 @@ Error: Port 5432 already in use
 ```
 Redis connection refused
 ```
-**Çözüm:** Docker container'larının çalıştığından emin olun: `docker-compose ps`
+**Çözüm:** Docker container'larının çalıştığından emin olun: `docker compose ps`
 
 ### Migration hatası
 ```
@@ -225,19 +225,6 @@ docker compose up --build
 docker compose exec web alembic upgrade head
 ```
 
-
----
-
-## 📋 Hızlı Başlangıç Checklist
-
-- [ ] Docker Desktop kurulu ve çalışıyor
-- [ ] `git clone` ile proje indirildi
-- [ ] `.env` dosyası oluşturuldu
-- [ ] `docker-compose up --build` çalıştırıldı
-- [ ] `alembic upgrade head` migration yapıldı
-- [ ] http://localhost:8000/docs açılıyor
-
----
 
 ## 📄 Lisans
 
